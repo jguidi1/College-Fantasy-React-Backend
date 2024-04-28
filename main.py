@@ -18,6 +18,12 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
+@app.get("/verify")
+async def root():
+    return {"message": "Hello World"}
+
+
+
 
 
 
