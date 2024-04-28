@@ -1,7 +1,7 @@
 from fastapi import FastAPI
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
@@ -12,7 +12,7 @@ app = FastAPI()
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 async_engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True)
 async_session = sessionmaker(autocommit=False, autoflush=True, bind=async_engine, class_=AsyncSession)
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 
 # User authentication setup
 SECRET = "super-secret-key"
