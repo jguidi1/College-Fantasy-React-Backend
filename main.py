@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Player, Team, League, College, Location, Stat, Schedule, UserScore, db
 from pydantic import BaseModel
 import jwt
 import hashlib
+
 
 class UserSignIn(BaseModel):
     email: str
@@ -54,18 +55,22 @@ def verify_user(userSignIn: UserSignIn):
     return {"message": "Login successful", "code": 200, "token": token}
 
 @app.get("/verify")
-def verify_token(token: str):
+def verify_token(token: str, response: Response):
     if not token or len(token) <= 0:
+        response.status_code = 400
         return {"message": "Please input a token", "code": 400}
     
+    print("TOKEN", token)
     try:
         decoded = decode_token(token)
         return {"message": "", "code": 200, "user_data": decoded}
        
     except jwt.ExpiredSignatureError:
+        response.status_code = 400
         return {"message": "Token expired", "code": 400}
         
     except jwt.InvalidTokenError:
+        response.status_code = 400
         return {"message": "Invalid token", "code": 400}
     
     
