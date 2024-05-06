@@ -4,3 +4,4 @@ jinja2
 sqlalchemy
 fastapi_login
 aiosqlite
+PyJWT

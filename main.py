@@ -1,9 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Player, Team, League, College, Location, Stat, Schedule, UserScore, db
+from pydantic import BaseModel
+import jwt
+import hashlib
+
+class UserSignIn(BaseModel):
+    email: str
+    password: str
 
 app = FastAPI()
 
+SECRET_KEY = "COLLEGE_FANTASY"
 origins = [
     "*",
 ]
@@ -19,9 +27,53 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
+def hash_password(password: str):
+    input_bytes = password.encode('utf-8')
+    sha256_hash = hashlib.sha256(input_bytes).hexdigest()
+    return sha256_hash
+
+def decode_token(token: str):
+    decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])   
+    return decoded_token
+
+@app.post("/sign-in")
+def verify_user(userSignIn: UserSignIn):
+    
+
+    user = db.query(User).filter(User.email == userSignIn.email, User.password_hash == hash_password(userSignIn.password)).first()
+    user.password = None
+    
+
+    token = jwt.encode({
+        "firstName": user.firstName,
+        "lastName": user.lastName,
+        "email": user.email,
+        "tid": user.tid
+        }, SECRET_KEY, algorithm='HS256')
+    
+    return {"message": "Login successful", "code": 200, "token": token}
+
 @app.get("/verify")
-async def root():
-    return {"message": "Hello World"}
+def verify_token(token: str):
+    if not token or len(token) <= 0:
+        return {"message": "Please input a token", "code": 400}
+    
+    try:
+        decoded = decode_token(token)
+        return {"message": "", "code": 200, "user_data": decoded}
+       
+    except jwt.ExpiredSignatureError:
+        return {"message": "Token expired", "code": 400}
+        
+    except jwt.InvalidTokenError:
+        return {"message": "Invalid token", "code": 400}
+    
+    
+
+@app.post("/sign-up")
+def sign_up_user():
+    return "asdasddasd"
+
 
 @app.get("/test")
 async def add():
