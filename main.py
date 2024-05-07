@@ -38,10 +38,14 @@ def decode_token(token: str):
     return decoded_token
 
 @app.post("/sign-in")
-def verify_user(userSignIn: UserSignIn):
+def verify_user(userSignIn: UserSignIn, response: Response):
     
 
     user = db.query(User).filter(User.email == userSignIn.email, User.password_hash == hash_password(userSignIn.password)).first()
+    if not user:
+        response.status_code = 404
+        return {"message": "User not found", "code": 404}
+    
     user.password = None
     
 
